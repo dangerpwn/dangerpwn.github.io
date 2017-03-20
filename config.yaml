@@ -1,0 +1,12 @@
+baseurl: "http://ctfs.and.coffee/"
+languageCode: "en-us"
+title: "Dangerpwn"
+theme: "detox"
+buildDrafts: true
+taxonomies:
+  tag: "tags"
+
+pygmentsStyle: "fruity"
+pygmentsUseClasses: false
+pygmentsCodeFences: false
+pygmentsOptions: "nobackground=false,title=test"
