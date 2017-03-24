@@ -2,13 +2,15 @@
 date: "2016-05-30T20:30:43+10:00"
 draft: true
 title: "Ruxcon 11 — Pwnable 2"
-authors: "tdrv"
+authors: ["tdrv"]
 tags: ["reversing", "pwnable", "writeups", "ctf", "ruxcon"]
 categories: ["test"]
 cover: "solarizedhax.png"
 ---
 
 This was the second pwnable challenge at Ruxcon 11. Players would SSH into a server running 64 bit Ubuntu and the SSH user's home directory contained two files: level2 and tokenfile. `file` and `cat` quickly revealed that `level2` is a x86-64 ELF executable that hasn't been stripped. `tokenfile` is a text file but we can't read it. Presumably then the aim of the challenge is to read that file!
+
+<!--more-->
 
 ```
 ➜  pwnable2  file level2

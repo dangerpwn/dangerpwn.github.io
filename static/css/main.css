@@ -19,12 +19,22 @@ audio:not([controls]) {
 html {
     font-family: sans-serif;
     -ms-text-size-adjust: 100%;
-    -webkit-text-size-adjust: 100%
+    -webkit-text-size-adjust: 100%;
+    height: 100%
 }
 
 body {
-    margin: 0
+    margin: 0;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
 }
+
+.content {
+    flex: 1;
+}
+
+
 
 a {
     background: transparent
@@ -239,14 +249,17 @@ abbr,acronym,blockquote,code,dir,kbd,listing,plaintext,q,samp,tt,var,xmp {
 }
 
 h1,h2,h3,h4,h5,h6 {
-    font-family: "Montserrat";
+    font-family: "Source Sans Pro", sans-serif;
     font-weight: 700;
     line-height: 1;
+    letter-spacing: -0.05em;
     margin-top: 0;
-    text-rendering: optimizeLegibility
+    text-rendering: optimizeLegibility;
 }
 
 h1 {
+    font-family: "Montserrat";
+    font-weight: 700;
     font-size: 60px;
     font-size: 3.33333rem;
     margin-bottom: 0.495em
@@ -420,7 +433,7 @@ cite {
 html {
     margin: 0;
     padding: 0;
-    font-family: "Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-family: "Source Sans Pro", sans-serif;
     font-size: 100%;
     line-height: 1.65;
     font-weight: normal;
@@ -517,7 +530,9 @@ figure>img {
 }
 
 audio,canvas,img,video {
-    vertical-align: middle
+    vertical-align: middle;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .btn,button,input[type="submit"],input[type="reset"],input[type="button"] {
@@ -783,7 +798,7 @@ hr {
     text-align: center;
     min-height: 15em;
     padding-top: 7em;
-    margin-bottom: 9em
+    margin-bottom: 6em
 }
 
 @media (max-width: 800px) {
@@ -811,7 +826,6 @@ hr {
 }
 
 article {
-    margin-bottom: 9em
 }
 
 article.li {
@@ -836,7 +850,7 @@ article.li {
     margin-bottom: 30px
 }
 
-.post-time {
+.post-attribution {
     text-transform: uppercase;
     letter-spacing: 4px;
     margin-bottom: 30px;
@@ -848,8 +862,23 @@ article.li {
     text-transform: uppercase;
     letter-spacing: 4px;
     font-size: 80%;
-    margin-top: 30px
+    margin-top: 30px;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
 }
+
+
+.p-post-footer {
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    font-size: 80%;
+    margin-top: 30px;
+    display:flex;
+    justify-content: center
+}
+
 
 .pagination {
     text-align: center;
@@ -880,7 +909,7 @@ article.li {
 }
 
 .p-post-title {
-    margin-bottom: 50px
+    margin-bottom: 30px
 }
 
 .f-1 {
@@ -974,7 +1003,7 @@ article.li {
 
 #site-footer {
     text-align: center;
-    height: 10em
+    padding: 1.5em
 }
 
 ul#topnav {
@@ -1012,3 +1041,44 @@ ul.tags li:after {
 ul.tags li:last-child:after {
     content: "";
 }
+
+.archive ul {
+    display: block;
+}
+
+div.archive > div.post-list-time {
+    display: flex;
+}
+
+.taxonomy-terms ul {
+    max-width: 600px;
+    padding: 0;
+    margin: auto;
+    list-style: none;
+    display: flex;
+    flex-flow: wrap;
+    justify-content: center;
+}
+
+.taxonomy-terms ul li { 
+    display: inline-block;
+    margin: 1em 2em;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: #b3b3b3;
+    font-size: 100%
+}
+
+.single-header {
+    text-align: center
+}
+
+.single-title {
+    margin-bottom: 50px
+}
+
+.taxonomy-terms {
+    margin-bottom: 50px;
+    margin-top: 50px;
+}
+

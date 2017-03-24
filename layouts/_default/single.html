@@ -1,4 +1,11 @@
 {{ define "main" }}
-	{{ .Render "post" }}
-{{ end }}
+<section id="main">
+	<header class="single-header">
+        <h2 class="single-title" id="title">{{ .Title }}</h2>
+    </header>
 
+    <section class="single-content">
+        {{ .Content }}
+    </section>
+</section>
+{{ end }}

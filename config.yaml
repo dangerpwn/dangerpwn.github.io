@@ -5,6 +5,7 @@ theme: "detox"
 buildDrafts: true
 taxonomies:
   tag: "tags"
+  author: "authors"
 
 pygmentsStyle: "fruity"
 pygmentsUseClasses: false
