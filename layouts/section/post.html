@@ -1,0 +1,20 @@
+{{ define "main" }}
+		<div class="archive">
+		{{ range .Data.Pages.GroupByDate "2006" }}
+			<h4>{{ .Key }}</h4>
+			<ul>
+					{{ range .Pages }}
+					<div class="post-list-item">
+						<div class="post-list-time">{{ .Date.Format "Jan 2" }}</div>
+						<a href="{{ .Permalink }}" class="post-list-link">
+							{{ if .Site.Params.useDescriptionAsTitle }}
+	                {{ .Description }}
+	            {{ else }}
+	            	 {{ .Title }}
+	          	{{ end }}
+						</a>
+					</div>
+					{{ end }}			</ul>
+		</div>
+        {{ end }}
+{{ end }}

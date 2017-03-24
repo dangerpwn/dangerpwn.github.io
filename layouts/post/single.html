@@ -1,0 +1,24 @@
+{{ define "main" }}
+
+<article class="{{ .Type }}">
+	<header class="post-header">
+        <h2 class="p-post-title">{{ .Title }}</h2>
+        {{ partial "attribution" . }}
+    </header>
+
+    <section class="post-content">
+        {{ .Content }}
+    </section>
+    <hr>
+    <footer class="post-footer">
+        <section class="f-1">
+            {{ partial "tags.html" . }}
+        </section>
+        <section class="f-2">
+            {{ partial "share.html" . }}
+        </section>
+        {{ partial "disqus.html" . }}        
+    </footer>
+</article>
+
+{{ end }}
