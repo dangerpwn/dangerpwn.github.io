@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <url>
+    <loc>http://ctfs.and.coffee/post/ruxcon/</loc>
+    <lastmod>2016-05-30T20:30:43+10:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://ctfs.and.coffee/about/</loc>
+  </url>
+  
+  <url>
+    <loc>http://ctfs.and.coffee/authors/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://ctfs.and.coffee/tags/ctf/</loc>
+    <lastmod>2016-05-30T20:30:43+10:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://ctfs.and.coffee/</loc>
+    <lastmod>2016-05-30T20:30:43+10:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://ctfs.and.coffee/post/</loc>
+    <lastmod>2016-05-30T20:30:43+10:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://ctfs.and.coffee/tags/pwnable/</loc>
+    <lastmod>2016-05-30T20:30:43+10:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://ctfs.and.coffee/tags/reversing/</loc>
+    <lastmod>2016-05-30T20:30:43+10:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://ctfs.and.coffee/tags/ruxcon/</loc>
+    <lastmod>2016-05-30T20:30:43+10:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://ctfs.and.coffee/tags/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://ctfs.and.coffee/authors/tdrv/</loc>
+    <lastmod>2016-05-30T20:30:43+10:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://ctfs.and.coffee/tags/writeups/</loc>
+    <lastmod>2016-05-30T20:30:43+10:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+</urlset>

