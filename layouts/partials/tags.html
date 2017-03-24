@@ -1,0 +1,9 @@
+            {{ with .Params.tags }}
+            	<span class="f-post-tags"><i class="fa fa-tag"></i>
+                    <ul class="tags">
+                    {{ range . }}
+                            <li><a href="/tags/{{ . | urlize }}">{{ . }}</a></li>
+                    {{ end }}
+                    </ul>
+                </span>
+            {{ end }}
