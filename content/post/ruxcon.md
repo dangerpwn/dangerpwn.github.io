@@ -1,10 +1,9 @@
 ---
 date: "2016-05-30T20:30:43+10:00"
-draft: true
+draft: false
 title: "Ruxcon 11 — Pwnable 2"
 authors: ["tdrv"]
 tags: ["reversing", "pwnable", "writeups", "ctf", "ruxcon"]
-categories: ["test"]
 cover: "solarizedhax.png"
 ---
 

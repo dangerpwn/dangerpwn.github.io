@@ -1,8 +1,9 @@
-baseurl: "http://ctfs.and.coffee/"
+baseurl: "http://indefinite.space/"
 languageCode: "en-us"
 title: "Dangerpwn"
 theme: "detox"
-buildDrafts: true
+metaDataFormat: "yaml"
+buildDrafts: false
 taxonomies:
   tag: "tags"
   author: "authors"
