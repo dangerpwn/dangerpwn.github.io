@@ -1,69 +1,75 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>http://ctfs.and.coffee/post/ruxcon/</loc>
+    <loc>http://indefinite.space/post/ruxcon/</loc>
     <lastmod>2016-05-30T20:30:43+10:00</lastmod>
   </url>
   
   <url>
-    <loc>http://ctfs.and.coffee/about/</loc>
+    <loc>http://indefinite.space/post/bsides-2017-the-countmes/</loc>
   </url>
   
   <url>
-    <loc>http://ctfs.and.coffee/authors/</loc>
+    <loc>http://indefinite.space/about/</loc>
+  </url>
+  
+  <url>
+    <loc>http://indefinite.space/authors/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://ctfs.and.coffee/tags/ctf/</loc>
-    <lastmod>2016-05-30T20:30:43+10:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://ctfs.and.coffee/</loc>
-    <lastmod>2016-05-30T20:30:43+10:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://ctfs.and.coffee/post/</loc>
+    <loc>http://indefinite.space/tags/ctf/</loc>
     <lastmod>2016-05-30T20:30:43+10:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://ctfs.and.coffee/tags/pwnable/</loc>
+    <loc>http://indefinite.space/</loc>
     <lastmod>2016-05-30T20:30:43+10:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://ctfs.and.coffee/tags/reversing/</loc>
+    <loc>http://indefinite.space/post/</loc>
     <lastmod>2016-05-30T20:30:43+10:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://ctfs.and.coffee/tags/ruxcon/</loc>
+    <loc>http://indefinite.space/tags/pwnable/</loc>
     <lastmod>2016-05-30T20:30:43+10:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://ctfs.and.coffee/tags/</loc>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>http://ctfs.and.coffee/authors/tdrv/</loc>
+    <loc>http://indefinite.space/tags/reversing/</loc>
     <lastmod>2016-05-30T20:30:43+10:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://ctfs.and.coffee/tags/writeups/</loc>
+    <loc>http://indefinite.space/tags/ruxcon/</loc>
+    <lastmod>2016-05-30T20:30:43+10:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://indefinite.space/tags/</loc>
+    <lastmod>2016-05-30T20:30:43+10:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://indefinite.space/authors/tdrv/</loc>
+    <lastmod>2016-05-30T20:30:43+10:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://indefinite.space/tags/writeups/</loc>
     <lastmod>2016-05-30T20:30:43+10:00</lastmod>
     <priority>0</priority>
   </url>
